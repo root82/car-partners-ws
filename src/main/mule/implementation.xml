@@ -33,7 +33,7 @@ output application/json
 	</flow>
 	<flow name="getCarPartnerDetailsByPartnerIdFlow" doc:id="66a40e12-9e7c-4c1e-b52e-a75bf57cea97" >
 		<db:select doc:name="selectCarPartnerDetails" doc:id="cf2b1fe9-b034-40e5-8b4a-8c216e480ea1" config-ref="db-postgresqlConfig">
-			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =id
+			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =:id
 ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	id: message.attributes.uriParams.partnerId
