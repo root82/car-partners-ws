@@ -10,6 +10,6 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 	</http:listener-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="befd6351-465e-4666-b308-dd32286fdf7d" file="config.yaml" />
 	<db:config name="db-postgresqlConfig" doc:name="Database Config" doc:id="0ca3091b-4c45-4ac6-86fa-4f2fe4a06536" >
-		<db:generic-connection url="${postgresql.url}" driverClassName="${postgresql.className}" user="${postgresql.userName} " password="${postgresql.password}" />
+		<db:generic-connection url="${postgresql.url}" driverClassName="${postgresql.className}" user="${postgresql.userName}" password="${postgresql.password}" />
 	</db:config>
 </mule>

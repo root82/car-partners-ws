@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
     <apikit:config name="car-partners-sapi-config" api="resource::697af2f9-4e10-406c-a7b1-d8ecfd14aca2:car-partners-sapi:1.0.0:raml:zip:car-partners-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="car-partners-sapi-main">
         <http:listener path="/api/*" config-ref="car-partners-sapi-httpListenerConfig">
@@ -121,136 +121,21 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\bookings\(bookingID):application\json:car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
-            <ee:variables>
-                <ee:set-variable variableName="bookingID">attributes.uriParams.'bookingID'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  bookingId: 1,
-  partnerId: 1,
-  customerName: "Murali",
-  customerContactNo: "9543267895",
-  customerEmailId: "Murali32@gmail.com",
-  bookingDate: "2021/09/26",
-  totalHours: "4",
-  price: "2000"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="258e1e0f-c506-4de7-a2ab-4e473c783235" name="updateBookingByBookingIdFlow"/>
     </flow>
     <flow name="delete:\bookings\(bookingID):car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
-            <ee:variables>
-                <ee:set-variable variableName="bookingID">attributes.uriParams.'bookingID'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Booking Cancelled Successfully"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="bf2c36b7-5442-4f03-a2e3-ac1115842d3d" name="cancelledBookingFlow"/>
     </flow>
     <flow name="get:\cars:car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    id: 1,
-    name: "OLA",
-    contactNo: "96785435789",
-    email: "OLACHENNAI@gmail.com",
-    location: "CHENNAI",
-    tariffPerHour: "650"
-  }, 
-  {
-    id: 2,
-    name: "UBER",
-    contactNo: "86785435789",
-    email: "UBERCHENNAI@gmail.com",
-    location: "CHENNAI",
-    tariffPerHour: "600"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="0ad8fb31-0de5-4acd-84da-d3f1d1453f6f" name="getCarsFlow"/>
     </flow>
     <flow name="get:\bookings\(bookingID):car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
-            <ee:variables>
-                <ee:set-variable variableName="bookingID">attributes.uriParams.'bookingID'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  bookingId: 1,
-  partnerId: 1,
-  customerName: "Murali",
-  customerContactNo: "9543267895",
-  customerEmailId: "Murali32@gmail.com",
-  bookingDate: "2021/09/26",
-  totalHours: "4",
-  price: "2000"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="f3dac137-4e84-4006-8966-08301dd2f5e4" name="getBookingsByBookingIdFlow"/>
     </flow>
     <flow name="get:\cars\(partnerId):car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
-            <ee:variables>
-                <ee:set-variable variableName="partnerId">attributes.uriParams.'partnerId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: 1,
-  name: "OLA",
-  contactNo: "96785435789",
-  email: "OLACHENNAI@gmail.com",
-  location: "CHENNAI",
-  tariffPerHour: "650"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="4a4e887c-a10c-49d5-91a5-2ac752eab769" name="getCarByPartnerIdFlow"/>
     </flow>
     <flow name="post:\bookings:application\json:car-partners-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  bookingId: 1,
-  partnerId: 1,
-  customerName: "Murali",
-  customerContactNo: "9543267895",
-  customerEmailId: "Murali32@gmail.com",
-  bookingDate: "2021/09/26",
-  totalHours: "4",
-  price: "2000"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="cd61702b-b0da-4e6b-b37d-92f9a375c5be" name="addBookingFlow"/>
     </flow>
 </mule>

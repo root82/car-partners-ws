@@ -1,5 +1,194 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow doc:id="ff30ae14-0eeb-43d4-bb03-f175b54c542d" name="getBookingsByBookingIdFlow">
+		<db:select doc:name="selectBookingDetails" doc:id="2738ea1b-a294-40b6-b256-d45dbb84768e" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[select * from bookings where bookingid = :bookingid
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	bookingid: message.attributes.uriParams.bookingID
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="172c3ea8-348d-4f0c-bf73-fadbbe5e88df" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bookingId: payload[0].bookingid,
+	partnerId: payload[0].partnerid default 0,
+	customerName: payload[0].customername,
+	customerContactNo: payload[0].customercontactno,
+	customerEmailId: payload[0].customeremailid,
+	bookingDate: payload[0].bookingdate,
+	totalHours: payload[0].totalhours,
+	price: payload[0].price
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getCarByPartnerIdFlow" doc:id="66a40e12-9e7c-4c1e-b52e-a75bf57cea97" >
+		<db:select doc:name="selectCarPartnerDetails" doc:id="cf2b1fe9-b034-40e5-8b4a-8c216e480ea1" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =id
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: message.attributes.uriParams.partnerId
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="98f91e2e-4b70-4fd3-844d-08599a21898f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	name: payload[0].name,
+	location: payload[0].location,
+	id: payload[0].id,
+	tariffPerHour: payload[0].tariffperhour,
+	email: payload[0].email,
+	contactNo: payload[0].contactno
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getCarsFlow" doc:id="b50a040e-b388-4668-ad52-4e3a9692156b" >
+		<db:select doc:name="selectAvialablePartnersBased on Location" doc:id="bc2aa82f-e8f8-44a8-a0fa-1831876bc719" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[select * from partnerdetails p  where p.location= :location
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	location: upper(message.attributes.queryParams.location)
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="734e7881-a1ea-44bb-9f61-9c24a3d29c64" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	name: payload01.name,
+	location: payload01.location,
+	id: payload01.id,
+	tariffPerHour: payload01.tariffperhour,
+	email: payload01.email,
+	contactNo: payload01.contactno
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="cancelledBookingFlow" doc:id="c29eca89-2eaf-4440-8d69-da9bced68239" >
+		<db:update doc:name="cancellbooking" doc:id="a0dec6b0-e738-42e8-8609-20df42af26c3" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[update bookings  set cancellationstatus='Y'
+where bookingid =bookingid
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	bookingid: message.attributes.uriParams.bookingID
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="7584f4ee-fedf-4d23-b819-607b0912a454" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Booking Cancelled Successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="updateBookingByBookingIdFlow" doc:id="c3172bfa-e2ab-4789-8123-ae5cf8b1af06" >
+		<set-variable value="#[message.attributes.uriParams.bookingID]" doc:name="bookingid" doc:id="554d1d7b-3ffa-43a4-9a01-993187ade768" variableName="bookingid"/>
+		<db:update doc:name="updateBookingDetails" doc:id="e64bbb52-104d-4bd3-9969-971b8c82d597" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[update  BOOKINGS 
+set 
+partnerid= :partnerId ,
+customername= :customerName ,
+customercontactno= :customerContactNo,
+customeremailid= :customerEmail ,
+totalhours= :totalHours ,
+price= :price 
+where bookingid= :bookingid
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	partnerId: message.payload.partnerId,
+	customerName: message.payload.customerName,
+	customerContactNo: message.payload.customerContactNo,
+	customerEmail: message.payload.customerEmailId,
+	totalHours: message.payload.totalHours,
+	price: message.payload.price,
+	bookingid: vars.bookingid
+
+}]]]></db:input-parameters>
+		</db:update>
+		<db:select doc:name="selectUpdatedBookingDetails" doc:id="5832860d-c5f0-4543-bc54-96403f50ad60" config-ref="db-postgresqlConfig">
+			<db:sql ><![CDATA[select * from bookings 
+where bookingid= :bookingid;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  bookingid: vars.bookingid	
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7bb84e98-8faf-435c-b506-960d6cf4b702" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerEmailId: payload.customeremailid,
+	totalHours: payload.totalhours,
+	price: payload.price,
+	bookingDate: payload.bookingdate,
+	partnerId: payload.partnerid default 0,
+	customerContactNo: payload.customercontactno,
+	bookingId: payload.bookingid,
+	customerName: payload.customername
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="addBookingFlow" doc:id="a315d109-67bb-47a5-a496-1bbd18c8841d" >
+		<db:insert doc:name="insertNewBooking" doc:id="b5db9eb8-32db-4ec1-87dd-2714608fd761" config-ref="db-postgresqlConfig">
+			<db:sql><![CDATA[insert into BOOKINGS 
+(partnerId,customerName,customerContactNo,customerEmailId,
+bookingDate,totalHours,price)
+values
+(:partnerId,:customerName,:customerContactNo,:customerEmailId,
+:bookingDate,:totalHours,:price);]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	partnerId: message.payload.partnerId,
+	customerName: message.payload.customerName,
+	customerContactNo: message.payload.customerContactNo,
+	customerEmailId: message.payload.customerEmailId,
+	bookingDate: message.payload.bookingDate,
+	totalHours: message.payload.totalHours,
+	price: ((message.payload.price as Number) * (message.payload.totalHours as Number)) as String
+
+}]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="selectBookingDetails" doc:id="02bb4ca5-c369-4cff-ba84-5d8c229a8535" config-ref="db-postgresqlConfig">
+			<db:sql><![CDATA[select * from bookings 
+order by bookingid desc limit 1
+]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="eb1d0323-8ea3-4835-a25b-5938da9831e9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerEmailId: payload[0].customeremailid,
+	totalHours: payload[0].totalhours,
+	price: payload[0].price,
+	bookingDate: payload[0].bookingdate,
+	partnerId: payload[0].partnerid default 0,
+	customerContactNo: payload[0].customercontactno,
+	bookingId: payload[0].bookingid,
+	customerName: payload[0].customername
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

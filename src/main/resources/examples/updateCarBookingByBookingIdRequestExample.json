@@ -1,0 +1,10 @@
+{
+  "bookingId": 1,
+  "partnerId": 1,
+  "customerName": "Murali",
+  "customerContactNo": "9543267895",
+  "customerEmailId": "Murali32@gmail.com",
+  "bookingDate": "2021/09/26",
+  "totalHours": "4",
+  "price": "2000"
+}
