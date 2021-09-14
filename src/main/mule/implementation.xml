@@ -31,7 +31,7 @@ output application/json
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="getCarByPartnerIdFlow" doc:id="66a40e12-9e7c-4c1e-b52e-a75bf57cea97" >
+	<flow name="getCarPartnerDetailsByPartnerIdFlow" doc:id="66a40e12-9e7c-4c1e-b52e-a75bf57cea97" >
 		<db:select doc:name="selectCarPartnerDetails" doc:id="cf2b1fe9-b034-40e5-8b4a-8c216e480ea1" config-ref="db-postgresqlConfig">
 			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =id
 ]]></db:sql>
@@ -55,8 +55,8 @@ output application/json
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="getCarsFlow" doc:id="b50a040e-b388-4668-ad52-4e3a9692156b" >
-		<db:select doc:name="selectAvialablePartnersBased on Location" doc:id="bc2aa82f-e8f8-44a8-a0fa-1831876bc719" config-ref="db-postgresqlConfig">
+	<flow name="getCarsByLocationFlow" doc:id="b50a040e-b388-4668-ad52-4e3a9692156b" >
+		<db:select doc:name="selectAvialablePartnersBasedOnLocation" doc:id="bc2aa82f-e8f8-44a8-a0fa-1831876bc719" config-ref="db-postgresqlConfig">
 			<db:sql ><![CDATA[select * from partnerdetails p  where p.location= :location
 ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -79,10 +79,10 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="cancelledBookingFlow" doc:id="c29eca89-2eaf-4440-8d69-da9bced68239" >
-		<db:update doc:name="cancellbooking" doc:id="a0dec6b0-e738-42e8-8609-20df42af26c3" config-ref="db-postgresqlConfig">
+	<flow name="cancelBookingFlow" doc:id="c29eca89-2eaf-4440-8d69-da9bced68239" >
+		<db:update doc:name="updateBookingStatusToCancel" doc:id="a0dec6b0-e738-42e8-8609-20df42af26c3" config-ref="db-postgresqlConfig">
 			<db:sql ><![CDATA[update bookings  set cancellationstatus='Y'
-where bookingid =bookingid
+where bookingid = :bookingid
 ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	bookingid: message.attributes.uriParams.bookingID
@@ -104,11 +104,11 @@ output application/json
 		<db:update doc:name="updateBookingDetails" doc:id="e64bbb52-104d-4bd3-9969-971b8c82d597" config-ref="db-postgresqlConfig">
 			<db:sql ><![CDATA[update  BOOKINGS 
 set 
-partnerid= :partnerId ,
-customername= :customerName ,
+partnerid= :partnerId,
+customername= :customerName,
 customercontactno= :customerContactNo,
-customeremailid= :customerEmail ,
-totalhours= :totalHours ,
+customeremailid= :customerEmail,
+totalhours= :totalHours,
 price= :price 
 where bookingid= :bookingid
 ]]></db:sql>
@@ -120,7 +120,6 @@ where bookingid= :bookingid
 	totalHours: message.payload.totalHours,
 	price: message.payload.price,
 	bookingid: vars.bookingid
-
 }]]]></db:input-parameters>
 		</db:update>
 		<db:select doc:name="selectUpdatedBookingDetails" doc:id="5832860d-c5f0-4543-bc54-96403f50ad60" config-ref="db-postgresqlConfig">
@@ -164,8 +163,7 @@ values
 	customerEmailId: message.payload.customerEmailId,
 	bookingDate: message.payload.bookingDate,
 	totalHours: message.payload.totalHours,
-	price: ((message.payload.price as Number) * (message.payload.totalHours as Number)) as String
-
+	price: message.payload.price
 }]]]></db:input-parameters>
 		</db:insert>
 		<db:select doc:name="selectBookingDetails" doc:id="02bb4ca5-c369-4cff-ba84-5d8c229a8535" config-ref="db-postgresqlConfig">

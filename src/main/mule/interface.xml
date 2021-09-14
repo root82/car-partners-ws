@@ -121,21 +121,21 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\bookings\(bookingID):application\json:car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="258e1e0f-c506-4de7-a2ab-4e473c783235" name="updateBookingByBookingIdFlow"/>
+		<flow-ref doc:name="updateBookingByBookingIdFlow" doc:id="258e1e0f-c506-4de7-a2ab-4e473c783235" name="updateBookingByBookingIdFlow"/>
     </flow>
     <flow name="delete:\bookings\(bookingID):car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="bf2c36b7-5442-4f03-a2e3-ac1115842d3d" name="cancelledBookingFlow"/>
+		<flow-ref doc:name="cancelBookingFlow" doc:id="bf2c36b7-5442-4f03-a2e3-ac1115842d3d" name="cancelBookingFlow"/>
     </flow>
     <flow name="get:\cars:car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="0ad8fb31-0de5-4acd-84da-d3f1d1453f6f" name="getCarsFlow"/>
+		<flow-ref doc:name="getCarsByLocationFlow" doc:id="0ad8fb31-0de5-4acd-84da-d3f1d1453f6f" name="getCarsByLocationFlow"/>
     </flow>
     <flow name="get:\bookings\(bookingID):car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="f3dac137-4e84-4006-8966-08301dd2f5e4" name="getBookingsByBookingIdFlow"/>
+		<flow-ref doc:name="getBookingsByBookingIdFlow" doc:id="f3dac137-4e84-4006-8966-08301dd2f5e4" name="getBookingsByBookingIdFlow"/>
     </flow>
     <flow name="get:\cars\(partnerId):car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="4a4e887c-a10c-49d5-91a5-2ac752eab769" name="getCarByPartnerIdFlow"/>
+		<flow-ref doc:name="getCarPartnerDetailsByPartnerIdFlow" doc:id="4a4e887c-a10c-49d5-91a5-2ac752eab769" name="getCarPartnerDetailsByPartnerIdFlow"/>
     </flow>
     <flow name="post:\bookings:application\json:car-partners-sapi-config">
-		<flow-ref doc:name="Flow Reference" doc:id="cd61702b-b0da-4e6b-b37d-92f9a375c5be" name="addBookingFlow"/>
+		<flow-ref doc:name="addBookingFlow" doc:id="cd61702b-b0da-4e6b-b37d-92f9a375c5be" name="addBookingFlow"/>
     </flow>
 </mule>
