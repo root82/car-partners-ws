@@ -1,0 +1,14 @@
+%dw 2.0
+
+type auto_4578cf6e_df48_4ebc_b219_1fb4be1c29a2_Input_Payload = {
+  customerEmailId: String, 
+  totalHours: String, 
+  price: String, 
+  bookingDate: String, 
+  partnerId: Number, 
+  customerContactNo: String, 
+  bookingId?: Number, 
+  customerName: String, 
+  _?: Any
+}
+

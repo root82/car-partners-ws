@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_18fd40d0_b6da_4753_bc3f_d8406cb8c470_Input_Payload = Array<{  name: String,   location: String,   id: Number,   tariffPerHour: String,   email: String,   contactNo: String,   _?: Any}>
+

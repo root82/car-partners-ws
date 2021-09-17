@@ -55,13 +55,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>697af2f9-4e10-406c-a7b1-d8ecfd14aca2</groupId>
-			<artifactId>car-partners-sapi</artifactId>
-			<version>1.0.0</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-apikit-module</artifactId>
 			<version>1.5.2</version>
@@ -77,6 +70,13 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql-42.2.23</artifactId>
 			<version>0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>697af2f9-4e10-406c-a7b1-d8ecfd14aca2</groupId>
+			<artifactId>car-partners-sapi</artifactId>
+			<version>1.0.2</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 	</dependencies>
 
