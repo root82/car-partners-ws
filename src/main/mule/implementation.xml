@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="9e18c8bc-0e08-426d-9fab-9cbaebd6974d" />
 	<flow name="getBookingsByBookingIdFlow" doc:id="4578cf6e-df48-4ebc-b219-1fb4be1c29a2" >
 		<db:select doc:name="selectBookingDetails" doc:id="2738ea1b-a294-40b6-b256-d45dbb84768e" config-ref="db-postgresqlConfig">
-			<db:sql><![CDATA[select * from bookings where bookingid = :bookingid
+			<db:sql><![CDATA[select * from bookings where bookingid = :bookingId
 ]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
-	bookingid: message.attributes.uriParams.bookingId
+	bookingId: message.attributes.uriParams.bookingId
 }]]]></db:input-parameters>
 		</db:select>
+		<flow-ref doc:name="BookingId_Existence_CheckFlow" doc:id="ac865b5e-643b-43ec-90d8-b10fd0393eca" name="BookingId_Existence_CheckFlow"/>
 		<ee:transform doc:name="Transform Message" doc:id="172c3ea8-348d-4f0c-bf73-fadbbe5e88df">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -31,12 +34,44 @@ output application/json
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="cancelBookingFlow" doc:id="ba8f3834-f529-4e02-b25a-9b65e8d568df">
+		<set-variable value="#[attributes.uriParams.bookingId]" doc:name="bookingId" doc:id="caeecce4-992b-4fd5-b899-98775ffc9182" variableName="bookingId" />
+		<db:select doc:name="Select" doc:id="e863da3f-0cdc-4679-a486-1241e5bbeccf" config-ref="db-postgresqlConfig">
+			<db:sql><![CDATA[select bookingid , bookingdate  , cancellationstatus from bookings where bookingid = :bookingId;
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+bookingId: vars.bookingId
+}]]]></db:input-parameters>
+		</db:select>
+		<flow-ref doc:name="BookingId_Existence_CheckFlow" doc:id="89f5101c-c080-4f65-991c-f9308959ad13" name="BookingId_Existence_CheckFlow" />
+		<ee:transform doc:name="Transform Message" doc:id="99e3ec08-18d5-40ef-ba2f-40eba8c801e0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bookingdt: (payload[0].bookingdate replace "/" with("-")),
+	ct: payload.cancellationstatus 
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="interres"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bookingdt: (payload[0].bookingdate replace "/" with("-")),
+	ct: payload.cancellationstatus 
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Validation_For_Put_and_Delete" doc:id="6c7ba1d7-c7fb-444c-9dbd-d10b1d37871e" name="Validation_For_Put_and_Delete" />
+	</flow>
 	<flow name="getCarPartnerDetailsByPartnerIdFlow" doc:id="66a40e12-9e7c-4c1e-b52e-a75bf57cea97" >
 		<db:select doc:name="selectCarPartnerDetails" doc:id="cf2b1fe9-b034-40e5-8b4a-8c216e480ea1" config-ref="db-postgresqlConfig">
-			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =:id
+			<db:sql ><![CDATA[select * from partnerdetails p  where p.id =:partnerId
 ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
-	id: message.attributes.uriParams.partnerId
+	partnerId: message.attributes.uriParams.partnerId
 }]]]></db:input-parameters>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="98f91e2e-4b70-4fd3-844d-08599a21898f" >
@@ -83,11 +118,11 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 			</when>
 			<when expression="#[attributes.queryParams.partnerId as String != null]">
 				<db:select doc:name="selectcarDetailsByPartnerid" doc:id="8a4be8c1-deb5-47fc-bfdd-0cf5c8d96572" config-ref="db-postgresqlConfig">
-					<db:sql><![CDATA[select * from PartnerDetails where id= :id
+					<db:sql><![CDATA[select * from PartnerDetails where id= :partnerId
 
 ]]></db:sql>
 					<db:input-parameters><![CDATA[#[{
-	id: message.attributes.queryParams.partnerId as String default"1"
+	partnerId: message.attributes.queryParams.partnerId as String default"1"
 }]]]></db:input-parameters>
 				</db:select>
 				<ee:transform doc:name="Transform Message" doc:id="1694b773-e9d9-49e1-9bb1-ccbd459e4003">
@@ -120,54 +155,103 @@ output application/json
 			</otherwise>
 		</choice>
 	</flow>
-	<flow name="cancelBookingFlow" doc:id="ba8f3834-f529-4e02-b25a-9b65e8d568df" >
-		<db:update doc:name="updateBookingStatusToCancel" doc:id="a0dec6b0-e738-42e8-8609-20df42af26c3" config-ref="db-postgresqlConfig">
-			<db:sql><![CDATA[update bookings  set cancellationstatus='Y'
-where bookingid = :bookingid
-]]></db:sql>
-			<db:input-parameters><![CDATA[#[{
-	bookingid: message.attributes.uriParams.bookingId
-}]]]></db:input-parameters>
-		</db:update>
-		<ee:transform doc:name="Transform Message" doc:id="7584f4ee-fedf-4d23-b819-607b0912a454">
+	<flow name="Validation_For_Put_and_Delete" doc:id="a14d6e3a-2589-41fa-a10d-a04aeacd49d6" >
+		<choice doc:name="Choice" doc:id="2232a544-e29f-4aeb-906a-64bdf7031c21" >
+			<when expression="#[vars.interres.bookingdt &lt; now() as Date]">
+				<ee:transform doc:name="Transform Message" doc:id="146a15da-8706-4a5b-9b92-f603d9c64a35">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	message: "Booking Cancelled Successfully"
+	message : "Can't change Historical Data"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<when expression="#[(vars.interres.bookingdt &gt; now() as Date) and (vars.interres.ct[0] == 'N')]">
+				<db:update doc:name="Update" doc:id="a35aa309-5f7c-4316-a6ca-b4d9effd6810" config-ref="db-postgresqlConfig">
+					<db:sql ><![CDATA[update bookings set cancellationstatus ='Y'
+where bookingid =  :bookingId]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	bookingId: vars.bookingId as Number
+}]]]></db:input-parameters>
+				</db:update>
+				<ee:transform doc:name="Transform Message" doc:id="db57ccd8-630f-4c41-b047-e8ca945ce627">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Booking Cancelled Successfully"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="51633fbd-fddb-436b-91a6-6b396027255e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Something Went Wrong"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="BookingId_Existence_CheckFlow" doc:id="e8ad18ba-934d-4c2a-bbf4-3fb5a90d1f24" >
+		<validation:is-not-empty-collection doc:name="NO_REC_EXIST" doc:id="f6a1a40c-0361-44a3-8a9b-b98116f7b89e" config-ref="Validation_Config" message='"NO_REC_EXIST"'>
+			<error-mapping targetType="NO_REC_EXIST:NO_REC_EXIST" />
+		</validation:is-not-empty-collection>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="50905c0c-367b-4c8b-9db3-ab625af7e414" type="NO_REC_EXIST:NO_REC_EXIST">
+				<ee:transform doc:name="Transform Message" doc:id="f8e9cc4b-85af-4c8b-b076-4c61d918773c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "NO_REC_EXISTS"	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="a94df227-1dbd-4a04-94bb-fbf46a1fa842" variableName="httpStatus" />
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="updateBookingByBookingIdFlow" doc:id="988b43df-f354-405e-9c2a-77244d712a3a" >
 		<set-variable value="#[message.attributes.uriParams.bookingId]" doc:name="bookingid" doc:id="554d1d7b-3ffa-43a4-9a01-993187ade768" variableName="bookingid" />
 		<db:update doc:name="updateBookingDetails" doc:id="e64bbb52-104d-4bd3-9969-971b8c82d597" config-ref="db-postgresqlConfig">
 			<db:sql><![CDATA[update  BOOKINGS 
 set 
-partnerid= :partnerId,
-customername= :customerName,
-customercontactno= :customerContactNo,
-customeremailid= :customerEmail,
+customeremailid= :customerEmailId,
 totalhours= :totalHours,
-price= :price 
-where bookingid= :bookingid
+price= :price ,
+bookingdate= :bookingDate,
+partnerid= :partnerId,
+customercontactno= :customerContactNo,
+customername= :customerName
+where bookingid= :bookingId
 ]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
+	bookingDate: message.payload.bookingDate ,
 	partnerId: message.payload.partnerId,
 	customerName: message.payload.customerName,
 	customerContactNo: message.payload.customerContactNo,
-	customerEmail: message.payload.customerEmailId,
+	customerEmailId: message.payload.customerEmailId,
 	totalHours: message.payload.totalHours,
 	price: message.payload.price,
-	bookingid: vars.bookingid
+	bookingId: vars.bookingid
 }]]]></db:input-parameters>
 		</db:update>
 		<db:select doc:name="selectUpdatedBookingDetails" doc:id="5832860d-c5f0-4543-bc54-96403f50ad60" config-ref="db-postgresqlConfig">
 			<db:sql><![CDATA[select * from bookings 
-where bookingid= :bookingid;]]></db:sql>
+where bookingid= :bookingId]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
-  bookingid: vars.bookingid	
+  bookingId: vars.bookingid	
 }]]]></db:input-parameters>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="7bb84e98-8faf-435c-b506-960d6cf4b702">
@@ -176,14 +260,14 @@ where bookingid= :bookingid;]]></db:sql>
 output application/json
 ---
 {
-	customerEmailId: payload.customeremailid,
-	totalHours: payload.totalhours,
-	price: payload.price,
-	bookingDate: payload.bookingdate,
-	partnerId: payload.partnerid default 0,
-	customerContactNo: payload.customercontactno,
-	bookingId: payload.bookingid,
-	customerName: payload.customername
+	customerEmailId: payload[0].customeremailid,
+	totalHours: payload[0].totalhours,
+	price: payload[0].price,
+	bookingDate: payload[0].bookingdate,
+	partnerId: payload[0].partnerid default 0,
+	customerContactNo: payload[0].customercontactno,
+	bookingId: payload[0].bookingid,
+	customerName: payload[0].customername
 }
 ]]></ee:set-payload>
 			</ee:message>

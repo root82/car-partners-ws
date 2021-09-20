@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_a14d6e3a_2589_41fa_a10d_a04aeacd49d6_Output_Variables_interres = {|
+  bookingdt: String, 
+  ct: Null
+|}
+
