@@ -15,7 +15,6 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	bookingId: message.attributes.uriParams.bookingId
 }]]]></db:input-parameters>
 		</db:select>
-		<flow-ref doc:name="BookingId_Existence_CheckFlow" doc:id="ac865b5e-643b-43ec-90d8-b10fd0393eca" name="BookingId_Existence_CheckFlow"/>
 		<ee:transform doc:name="Transform Message" doc:id="172c3ea8-348d-4f0c-bf73-fadbbe5e88df">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -43,7 +42,6 @@ output application/json
 bookingId: vars.bookingId
 }]]]></db:input-parameters>
 		</db:select>
-		<flow-ref doc:name="BookingId_Existence_CheckFlow" doc:id="89f5101c-c080-4f65-991c-f9308959ad13" name="BookingId_Existence_CheckFlow" />
 		<ee:transform doc:name="Transform Message" doc:id="99e3ec08-18d5-40ef-ba2f-40eba8c801e0">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
